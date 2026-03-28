@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { riskAlerts, tenants } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 import { runGlobalRiskCheck } from "@/lib/risk-engine";
+import { cn } from "@/lib/utils";
 
 async function getAlerts() {
   // We run a check on every load for this demo to ensure latest alerts

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { tenants } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
+import { cn } from "@/lib/utils";
 
 async function getTenants() {
   return await db.query.tenants.findMany({

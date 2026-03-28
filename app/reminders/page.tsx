@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { reminders } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
+import { cn } from "@/lib/utils";
 
 async function getReminders() {
   return await db.query.reminders.findMany({

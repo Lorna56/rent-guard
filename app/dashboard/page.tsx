@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { tenants, payments, riskAlerts, properties } from "@/lib/db/schema";
 import { count, sum, eq, desc } from "drizzle-orm";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 async function getStats() {
   const [tenantCount] = await db.select({ value: count() }).from(tenants);
