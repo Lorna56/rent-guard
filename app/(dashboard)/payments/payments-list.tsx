@@ -1,3 +1,5 @@
+"use client";
+
 import { 
   CreditCard, 
   Search,
@@ -6,30 +8,46 @@ import {
   ArrowDownRight,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  FileDown
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/db";
-import { payments } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { RecordPaymentModal } from "@/components/modals/record-payment-modal";
 
-async function getPayments() {
-  return await db.query.payments.findMany({
-    orderBy: [desc(payments.dueDate)],
-    with: {
-      lease: {
-        with: {
-          tenant: true,
-          property: true,
-        }
-      }
-    }
-  });
+interface PaymentsListProps {
+  initialPayments: any[];
+  allTenants: any[];
 }
 
-export default async function PaymentsPage() {
-  const allPayments = await getPayments();
+export function PaymentsList({ initialPayments, allTenants }: PaymentsListProps) {
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredPayments = initialPayments.filter(p => 
+    p.lease.tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    // Generate simple CSV
+    const headers = "Status,Resident,Property,Amount,Due Date\n";
+    const rows = filteredPayments.map(p => 
+      `${p.status},${p.lease.tenant.name},${p.lease.property.name},${p.amount},${new Date(p.dueDate).toLocaleDateString()}`
+    ).join("\n");
+    
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `rent_payments_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <div className="space-y-8 animate-in text-slate-800">
@@ -39,10 +57,17 @@ export default async function PaymentsPage() {
           <p className="text-slate-500 font-medium mt-1">Monitor all rental transactions and overdue accounts.</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-border rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+          <button 
+            onClick={handleExport}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-border rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <FileDown className="w-5 h-5" />
             Export Report
           </button>
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:translate-y-[-2px] active:scale-[0.98] transition-all">
+          <button 
+            onClick={() => setIsRecordModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:translate-y-[-2px] active:scale-[0.98] transition-all"
+          >
             Record Payment
           </button>
         </div>
@@ -89,8 +114,10 @@ export default async function PaymentsPage() {
           <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search payments by tenant, property or invoice ID..." 
+            placeholder="Search payments by tenant..." 
             className="w-full bg-white border border-border rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
@@ -107,12 +134,12 @@ export default async function PaymentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {allPayments.length === 0 ? (
+              {filteredPayments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-8 py-20 text-center text-slate-400 font-bold italic">No payment records found.</td>
                 </tr>
               ) : (
-                allPayments.map((payment) => (
+                filteredPayments.map((payment) => (
                   <tr key={payment.id} className="group hover:bg-accent/30 transition-all cursor-pointer">
                     <td className="px-8 py-6">
                       <Badge 
@@ -121,7 +148,7 @@ export default async function PaymentsPage() {
                           payment.status === "late" ? "danger" : "warning"
                         }
                       >
-                        {payment.status.toUpperCase()}
+                        {(payment.status || "PENDING").toUpperCase()}
                       </Badge>
                     </td>
                     <td className="px-8 py-6">
@@ -155,6 +182,12 @@ export default async function PaymentsPage() {
           </table>
         </div>
       </div>
+
+      <RecordPaymentModal 
+        isOpen={isRecordModalOpen} 
+        onClose={() => setIsRecordModalOpen(false)} 
+        tenants={allTenants}
+      />
     </div>
   );
 }
