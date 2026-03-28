@@ -80,7 +80,7 @@ body {
 }
 
 /* Glassmorphism Utility Classes */
-.glass {
+@utility glass {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -88,15 +88,15 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
-.glass-card {
+@utility glass-card {
   @apply glass rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px];
 }
 
-.gradient-text {
+@utility gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-br from-indigo-400 to-purple-600;
 }
 
-.animate-in {
+@utility animate-in {
   animation: fade-in 0.5s ease-out forwards;
 }
 
