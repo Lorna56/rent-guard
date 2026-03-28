@@ -55,14 +55,63 @@ export async function analyzeTenantRisk(tenantId: number) {
 
 /**
  * High-level function to check all active tenants for risk.
+ * Optimized to use a single query for identifying risk patterns across the entire database.
  */
 export async function runGlobalRiskCheck() {
-  const allTenants = await db.select().from(tenants);
+  const fourMonthsAgo = subMonths(new Date(), 4);
+
+  // 1. Find all tenants who have 2+ late payments in the last 4 months
+  const atRiskTenants = await db
+    .select({
+      tenantId: tenants.id,
+      lateCount: count(payments.id),
+    })
+    .from(payments)
+    .innerJoin(leases, eq(payments.leaseId, leases.id))
+    .innerJoin(tenants, eq(leases.tenantId, tenants.id))
+    .where(
+      and(
+        gte(payments.dueDate, fourMonthsAgo),
+        sql`(${payments.status} = 'late' OR ${payments.paidAt} > ${payments.dueDate})`
+      )
+    )
+    .groupBy(tenants.id)
+    .having(sql`count(${payments.id}) >= 2`);
+
+  if (atRiskTenants.length === 0) return [];
+
   const results = [];
 
-  for (const tenant of allTenants) {
-    const result = await analyzeTenantRisk(tenant.id);
-    results.push({ tenantId: tenant.id, ...result });
+  // 2. Process each at-risk tenant (Batching alerts and updates is better, but this is already much faster than before)
+  for (const { tenantId, lateCount } of atRiskTenants) {
+    // Check if an alert already exists to avoid spamming
+    const existingAlert = await db.query.riskAlerts.findFirst({
+      where: and(
+        eq(riskAlerts.tenantId, tenantId),
+        eq(riskAlerts.type, "multiple_delays")
+      ),
+      orderBy: [desc(riskAlerts.createdAt)]
+    });
+
+    // Only create alert if none exists in the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    if (!existingAlert || (existingAlert.createdAt && existingAlert.createdAt < thirtyDaysAgo)) {
+      await db.insert(riskAlerts).values({
+        tenantId,
+        type: "multiple_delays",
+        severity: "high",
+        message: `Tenant has delayed payments ${lateCount} times in the last 4 months.`,
+      });
+
+      await db
+        .update(tenants)
+        .set({ riskScore: 80 })
+        .where(eq(tenants.id, tenantId));
+    }
+
+    results.push({ tenantId, isHighRisk: true, lateCount });
   }
 
   return results;
