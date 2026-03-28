@@ -33,58 +33,62 @@ export default async function TenantsPage() {
 
   return (
     <div className="space-y-8 animate-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight mb-2">Tenant Directory</h2>
-          <p className="text-slate-400">Manage your active residents and their lease history.</p>
+          <h2 className="text-3xl font-black tracking-tight text-slate-800">Tenant Directory</h2>
+          <p className="text-slate-500 font-medium mt-1">Manage your active residents and their lease history.</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
-          <Plus className="w-4 h-4" />
-          Add Tenant
+        <button className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:translate-y-[-2px] active:scale-[0.98] transition-all">
+          <Plus className="w-5 h-5" />
+          Add New Tenant
         </button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
             placeholder="Search by name, email, or phone..." 
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-white border border-border rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
           />
         </div>
-        <button className="flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-lg text-sm hover:bg-white/10 transition-all font-medium text-slate-300">
-          <Filter className="w-4 h-4" />
-          More Filters
+        <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-border rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+          <Filter className="w-5 h-5" />
+          Advanced Filters
         </button>
       </div>
 
       <div className="grid gap-6">
         {allTenants.length === 0 ? (
-          <p className="text-center py-12 text-slate-500">No tenants recorded yet.</p>
+          <div className="text-center py-20 glass rounded-[2.5rem] border-dashed border-2 border-slate-200">
+            <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500 font-bold">No tenants recorded yet.</p>
+            <button className="mt-4 text-primary font-bold hover:underline">Add your first tenant</button>
+          </div>
         ) : (
           allTenants.map((tenant) => (
-            <Card key={tenant.id} className="group relative transition-all border-white/5 hover:border-indigo-500/20">
+            <Card key={tenant.id} className="group overflow-hidden border-border hover:border-primary/30 transition-all duration-300 shadow-sm hover:shadow-xl hover:translate-y-[-2px]">
               <CardContent className="p-0">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 p-6">
                   <div className="flex items-start gap-6">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/10 shrink-0">
+                    <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-primary/20 shrink-0">
                       {tenant.name.charAt(0)}
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{tenant.name}</h4>
+                        <h4 className="text-xl font-black text-slate-800 group-hover:text-primary transition-colors tracking-tight">{tenant.name}</h4>
                         <Badge variant={tenant.riskScore && tenant.riskScore > 50 ? "danger" : "success"}>
                           {tenant.riskScore && tenant.riskScore > 50 ? "High Risk" : "Stable"}
                         </Badge>
                       </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                        <span className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                          <Mail className="w-4 h-4 text-indigo-400/60" />
+                      <div className="flex flex-wrap gap-5 text-sm font-medium text-slate-500">
+                        <span className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
+                          <Mail className="w-4 h-4 text-primary/60" />
                           {tenant.email}
                         </span>
-                        <span className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                          <Phone className="w-4 h-4 text-indigo-400/60" />
+                        <span className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
+                          <Phone className="w-4 h-4 text-primary/60" />
                           {tenant.phone}
                         </span>
                       </div>
@@ -92,16 +96,16 @@ export default async function TenantsPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-10 lg:gap-16 pr-4">
-                    <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-widest text-slate-500 font-bold">Property</p>
-                      <p className="text-sm font-semibold text-white">
+                    <div className="space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Active Property</p>
+                      <p className="text-sm font-bold text-slate-700">
                         {tenant.leases[0]?.property?.name || "No active lease"}
                       </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-widest text-slate-500 font-bold">Risk Score</p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Risk Analysis</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-2 rounded-full bg-slate-100 overflow-hidden">
                           <div 
                             className={cn(
                               "h-full transition-all duration-1000",
@@ -110,17 +114,17 @@ export default async function TenantsPage() {
                             style={{ width: `${tenant.riskScore}%` }}
                           />
                         </div>
-                        <span className="text-xs font-bold text-slate-300">{tenant.riskScore}%</span>
+                        <span className="text-xs font-black text-slate-600 uppercase italic">{tenant.riskScore}%</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm font-semibold hover:bg-indigo-600/20 hover:text-indigo-400 transition-all flex items-center gap-2">
+                    <button className="px-6 py-2.5 bg-secondary text-secondary-foreground border border-primary/10 rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all flex items-center gap-2 shadow-sm">
                       View Profile
                       <ArrowRight className="w-4 h-4" />
                     </button>
-                    <button className="p-2.5 bg-white/5 border border-white/5 rounded-lg text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition-all">
+                    <button className="p-2.5 bg-white border border-border rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all shadow-sm">
                       <MoreVertical className="w-5 h-5" />
                     </button>
                   </div>
