@@ -7,9 +7,9 @@ import { encrypt } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-export async function signup(formData: any) {
+export async function signup(formData: Record<string, string>) {
   const { name, email, password, propertyCount } = formData;
 
   // 1. Check if user exists
@@ -37,7 +37,7 @@ export async function signup(formData: any) {
 
   // 4. Send Welcome Email
   try {
-    if (process.env.RESEND_API_KEY) {
+    if (resend) {
       await resend.emails.send({
         from: 'RentGuard <welcome@rentguard.com>',
         to: email,
@@ -52,7 +52,7 @@ export async function signup(formData: any) {
   return { success: true };
 }
 
-export async function login(formData: any) {
+export async function login(formData: Record<string, string>) {
   const { email, password } = formData;
 
   const landlord = await db.query.landlords.findFirst({
