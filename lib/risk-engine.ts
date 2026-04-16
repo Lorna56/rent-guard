@@ -57,10 +57,19 @@ export async function analyzeTenantRisk(tenantId: number) {
  * High-level function to check all active tenants for risk.
  * Optimized to use a single query for identifying risk patterns across the entire database.
  */
-export async function runGlobalRiskCheck() {
+export async function runGlobalRiskCheck(landlordId?: number) {
   const fourMonthsAgo = subMonths(new Date(), 4);
 
   // 1. Find all tenants who have 2+ late payments in the last 4 months
+  let whereClause = and(
+    gte(payments.dueDate, fourMonthsAgo),
+    sql`(${payments.status} = 'late' OR ${payments.paidAt} > ${payments.dueDate})`
+  );
+
+  if (landlordId) {
+    whereClause = and(whereClause, eq(tenants.landlordId, landlordId));
+  }
+
   const atRiskTenants = await db
     .select({
       tenantId: tenants.id,
@@ -69,12 +78,7 @@ export async function runGlobalRiskCheck() {
     .from(payments)
     .innerJoin(leases, eq(payments.leaseId, leases.id))
     .innerJoin(tenants, eq(leases.tenantId, tenants.id))
-    .where(
-      and(
-        gte(payments.dueDate, fourMonthsAgo),
-        sql`(${payments.status} = 'late' OR ${payments.paidAt} > ${payments.dueDate})`
-      )
-    )
+    .where(whereClause)
     .groupBy(tenants.id)
     .having(sql`count(${payments.id}) >= 2`);
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tenants, leases, landlords } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -11,15 +12,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Get the first landlord as a default (for demo purposes)
-    const landlord = await db.query.landlords.findFirst();
-    if (!landlord) {
-      return NextResponse.json({ error: "No landlord found in database" }, { status: 500 });
+    // 1. Get the authenticated landlord
+    const session = await getSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const landlordId = session.user.id;
 
     // 2. Perform the insertion in a transaction (simulated with consecutive awaits for simplicity in current setup)
     const [newTenant] = await db.insert(tenants).values({
-      landlordId: landlord.id,
+      landlordId: landlordId,
       name,
       email,
       phone,

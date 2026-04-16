@@ -14,10 +14,15 @@ import { db } from "@/lib/db";
 import { reminders } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 import { cn } from "@/lib/utils";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { tenants, leases } from "@/lib/db/schema";
+import { eq, inArray } from "drizzle-orm";
 
-async function getReminders() {
+async function getReminders(landlordId: number) {
   return await db.query.reminders.findMany({
     orderBy: [desc(reminders.scheduledAt)],
+    where: inArray(reminders.leaseId, db.select({ id: leases.id }).from(leases).innerJoin(tenants, eq(leases.tenantId, tenants.id)).where(eq(tenants.landlordId, landlordId))),
     with: {
       lease: {
         with: {
@@ -30,7 +35,11 @@ async function getReminders() {
 }
 
 export default async function RemindersPage() {
-  const allReminders = await getReminders();
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const landlordId = session.user.id;
+  const allReminders = await getReminders(landlordId);
 
   return (
     <div className="space-y-8 animate-in text-slate-800">
