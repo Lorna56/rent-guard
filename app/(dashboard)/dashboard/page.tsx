@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { tenants, payments, riskAlerts, properties } from "@/lib/db/schema";
+import { tenants, payments, riskAlerts, properties, leases } from "@/lib/db/schema";
 import { count, sum, eq, desc, and, inArray } from "drizzle-orm";
 import { DashboardContent } from "./dashboard-content";
 import { getSession } from "@/lib/auth";

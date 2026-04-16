@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export interface JWTPayload {
+export interface SessionPayload {
   user: {
     id: number;
     email: string;
@@ -15,7 +15,7 @@ export interface JWTPayload {
 const secretKey = "secret"; // In production, use process.env.JWT_SECRET
 const key = new TextEncoder().encode(secretKey);
 
-export async function encrypt(payload: JWTPayload) {
+export async function encrypt(payload: SessionPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -23,11 +23,11 @@ export async function encrypt(payload: JWTPayload) {
     .sign(key);
 }
 
-export async function decrypt(input: string): Promise<JWTPayload> {
+export async function decrypt(input: string): Promise<SessionPayload> {
   const { payload } = await jwtVerify(input, key, {
     algorithms: ["HS256"],
   });
-  return payload;
+  return payload as unknown as SessionPayload;
 }
 
 export async function getSession() {
