@@ -79,6 +79,12 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+              {error}
+            </div>
+          )}
+
           <button 
             type="submit"
             disabled={isPending}
