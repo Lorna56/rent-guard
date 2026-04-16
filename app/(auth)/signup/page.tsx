@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { Shield, ArrowRight, User, Mail, Lock, Building2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { signup } from "@/app/api/actions/auth";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -14,10 +15,43 @@ export default function SignupPage() {
   });
   const router = useRouter();
 
-  const handleSignup = (e: React.FormEvent) => {
+  const [error, setError] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  const passwordStrength = useMemo(() => {
+    const pass = formData.password;
+    if (!pass) return { score: 0, label: "None", color: "bg-slate-200" };
+    
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+
+    if (score < 2) return { score, label: "Weak", color: "bg-red-500" };
+    if (score === 2) return { score, label: "Fair", color: "bg-amber-500" };
+    if (score === 3) return { score, label: "Good", color: "bg-blue-500" };
+    return { score, label: "Strong", color: "bg-emerald-500" };
+  }, [formData.password]);
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would handle registration. For this demo, we'll just redirect to dashboard.
-    router.push("/dashboard");
+    setError("");
+
+    if (passwordStrength.score < 3) {
+      setError("Please use a stronger password");
+      return;
+    }
+
+    setIsPending(true);
+    const result = await signup(formData);
+    setIsPending(false);
+
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -100,15 +134,38 @@ export default function SignupPage() {
                 className="w-full bg-white/70 border border-border rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               />
             </div>
+            
+            {formData.password && (
+              <div className="mt-2 px-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Strength: {passwordStrength.label}</span>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div 
+                        key={i} 
+                        className={`h-1 w-6 rounded-full transition-colors ${i <= passwordStrength.score ? passwordStrength.color : 'bg-slate-200'}`} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+          {error && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+              {error}
+            </div>
+          )}
 
           <div className="pt-4">
             <button 
               type="submit"
-              className="w-full py-5 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/25 hover:translate-y-[-2px] hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+              disabled={isPending}
+              className="w-full py-5 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/25 hover:translate-y-[-2px] hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up For Free
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {isPending ? "Creating Account..." : "Sign Up For Free"}
+              {!isPending && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
             </button>
           </div>
         </form>

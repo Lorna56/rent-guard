@@ -4,16 +4,29 @@ import Link from "next/link";
 import { Shield, ArrowRight, Mail, Lock } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { login } from "@/app/api/actions/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [error, setError] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would handle auth. For this demo, we'll just redirect to dashboard.
-    router.push("/dashboard");
+    setError("");
+    setIsPending(true);
+
+    const result = await login({ email, password });
+    setIsPending(false);
+
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -68,10 +81,11 @@ export default function LoginPage() {
 
           <button 
             type="submit"
-            className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/25 hover:translate-y-[-2px] hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+            disabled={isPending}
+            className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/25 hover:translate-y-[-2px] hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
           >
-            Access Dashboard
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            {isPending ? "Signing In..." : "Access Dashboard"}
+            {!isPending && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>
 

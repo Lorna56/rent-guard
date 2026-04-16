@@ -24,11 +24,20 @@ const menuItems = [
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+}
+
+export function Sidebar({ isOpen }: SidebarProps) {
+
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 glass border-r border-border p-6 flex flex-col z-50 hidden lg:flex bg-white/50">
+    <aside className={cn(
+      "fixed left-0 top-0 h-screen w-64 glass border-r border-border p-6 flex flex-col z-50 bg-white/50 transition-transform duration-300 lg:translate-x-0 lg:flex",
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    )}>
+
       <div className="flex items-center gap-3 mb-10 px-2">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
           <Shield className="w-6 h-6 text-white" />
