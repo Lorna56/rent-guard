@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Shield, 
   ArrowRight, 
@@ -64,12 +65,25 @@ export default function LandingPage() {
               Start Protecting My Property
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link 
-              href="#preview" 
-              className="w-full sm:w-auto px-10 py-5 bg-secondary text-secondary-foreground rounded-[2rem] text-lg font-bold border border-primary/10 hover:bg-white transition-all flex items-center justify-center gap-2"
-            >
-              Explore Dashboard
-            </Link>
+            <div className="relative group/button">
+              <Link 
+                href="#preview" 
+                className="w-full sm:w-auto px-10 py-5 bg-secondary text-secondary-foreground rounded-[2rem] text-lg font-bold border border-primary/10 hover:bg-white transition-all flex items-center justify-center gap-2"
+              >
+                Explore Dashboard
+              </Link>
+              
+              {/* Floating Snap Preview */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 w-64 h-40 rounded-2xl overflow-hidden glass border-2 border-primary/20 shadow-2xl scale-0 group-hover/button:scale-100 origin-bottom transition-all duration-300 pointer-events-none z-50">
+                <Image 
+                  src="/images/dashboard-snap.png" 
+                  alt="Dashboard Snapshot" 
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
+            </div>
           </div>
 
           <div className="pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
@@ -82,61 +96,52 @@ export default function LandingPage() {
       </section>
 
       {/* Dashboard Preview Section */}
-      <section id="preview" className="pb-24 px-6 -mt-10 scroll-mt-24">
+      <section id="preview" className="pb-32 px-6 -mt-10 scroll-mt-24">
         <div className="max-w-6xl mx-auto">
-          <div className="glass p-4 md:p-8 rounded-[3rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-sky-400 to-primary" />
+          <div className="relative glass p-2 md:p-3 rounded-[2.5rem] border border-white/50 shadow-2xl overflow-hidden group">
+            {/* Browser Header */}
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-purple-400 to-primary z-20" />
             
-            <div className="bg-slate-50/50 rounded-[2rem] border border-slate-200 overflow-hidden shadow-inner">
-              <div className="h-12 border-b border-slate-200 bg-white/80 flex items-center px-6 gap-4">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-slate-200" />
-                  <div className="w-3 h-3 rounded-full bg-slate-200" />
-                  <div className="w-3 h-3 rounded-full bg-slate-200" />
+            <div className="bg-white/40 rounded-[2rem] overflow-hidden relative shadow-inner">
+              {/* Toolbar */}
+              <div className="h-10 md:h-12 border-b border-border/50 bg-white/60 flex items-center px-6 gap-6">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-400/20 border border-red-400/30" />
+                  <div className="w-3 h-3 rounded-full bg-amber-400/20 border border-amber-400/30" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-400/20 border border-emerald-400/30" />
                 </div>
-                <div className="w-40 h-6 bg-slate-100 rounded-lg" />
+                <div className="flex-1 max-w-md h-7 bg-slate-100/50 rounded-lg flex items-center px-3 gap-2">
+                  <div className="w-3 h-3 rounded-sm bg-slate-300/30" />
+                  <div className="h-2 w-32 bg-slate-300/20 rounded" />
+                </div>
               </div>
               
-              <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 mb-4" />
-                    <div className="h-4 w-24 bg-slate-100 rounded mb-2" />
-                    <div className="h-4 w-16 bg-slate-200 rounded" />
-                  </div>
-                ))}
-                <div className="md:col-span-3 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm overflow-hidden line-clamp-1">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="h-6 w-32 bg-slate-100 rounded" />
-                    <div className="h-8 w-24 bg-primary/10 rounded-lg" />
-                  </div>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-slate-100" />
-                          <div className="space-y-1">
-                            <div className="h-4 w-32 bg-slate-100 rounded" />
-                            <div className="h-3 w-20 bg-slate-50 rounded" />
-                          </div>
-                        </div>
-                        <div className="h-6 w-16 bg-emerald-50 rounded-full" />
-                      </div>
-                    ))}
-                  </div>
+              {/* The Snap Image */}
+              <div className="relative aspect-[16/10] md:aspect-[16/9] w-full overflow-hidden">
+                <Image 
+                  src="/images/dashboard-snap.png"
+                  alt="RentGuard Dashboard High Fidelity Preview"
+                  fill
+                  className="object-cover object-top hover:scale-[1.02] transition-transform duration-700"
+                  priority
+                />
+                
+                {/* Interactive Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-12">
+                  <Link 
+                    href="/signup" 
+                    className="px-10 py-5 bg-primary text-white rounded-2xl font-bold shadow-2xl shadow-primary/40 flex items-center gap-3 hover:scale-105 active:scale-95 transition-all text-lg"
+                  >
+                    Start Your Free Trial
+                    <ArrowRight className="w-6 h-6" />
+                  </Link>
                 </div>
               </div>
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Link 
-                href="/signup" 
-                className="px-8 py-4 bg-primary text-white rounded-2xl font-bold shadow-2xl shadow-primary/40 flex items-center gap-2 hover:scale-105 transition-transform"
-              >
-                Get Full Access Now
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
+            {/* Decorative Elements */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl -z-10" />
+            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl -z-10" />
           </div>
         </div>
       </section>
